@@ -1,0 +1,26 @@
+[package]
+name = "echoma"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "echoma"
+path = "src/bin/main.rs"
+
+[dependencies]
+lazy_static = "1.4.0"
+anyhow = "1.0.70"
+rand = "0.8"
+thiserror = "1"
+tokio = { version = "1", features = ["full"] }
+slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_debug"] }
+slog-term = { version = "2.9.0" }
+chrono = "0.4.31"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.111"
+clap = { version = "4.4.18", features = ["derive"] }
+async_once = "0.2.6"
+
+[build-dependencies]
+cc = "1.0.79"
+bindgen = "0.66.1"
