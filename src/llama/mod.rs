@@ -2,14 +2,13 @@ use std::{
     collections::HashMap,
     ffi::{c_char, c_void, CStr, CString},
     mem::size_of,
-    sync::{Arc, Mutex},
+    sync::Mutex,
 };
 
 use crate::{config::config_model_or_default, Result};
 use async_once::AsyncOnce;
-use options::{ModelOptions, PredictOptions};
-
 use lazy_static::lazy_static;
+use options::{ModelOptions, PredictOptions};
 
 pub mod options;
 
@@ -19,8 +18,7 @@ pub type Callback = Box<dyn Fn(String) -> bool + Send + 'static>;
 
 lazy_static! {
     static ref CALLBACKS: Mutex<HashMap<usize, Callback>> = Mutex::new(HashMap::new());
-    pub static ref LOCAL_LLAMA: AsyncOnce<Arc<LLama>> =
-        AsyncOnce::new(async { Arc::new(new_llama().await) });
+    pub static ref LOCAL_LLAMA: AsyncOnce<LLama> = AsyncOnce::new(async { new_llama().await });
 }
 
 async fn new_llama() -> LLama {
@@ -386,8 +384,6 @@ impl LLama {
         if !reverse_prompt.is_empty() {
             pass = reverse_prompt.as_mut_ptr();
         }
-
-        println!("reverse count {}", reverse_count);
 
         let mut out = Vec::with_capacity(opts.tokens as usize);
         let logit_bias_cstr = CString::new(opts.logit_bias.clone()).unwrap();

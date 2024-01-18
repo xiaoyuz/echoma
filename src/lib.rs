@@ -4,6 +4,8 @@ use lazy_static::lazy_static;
 use slog::Drain;
 use std::fs::OpenOptions;
 
+pub mod client;
+pub mod cmd;
 pub mod config;
 pub mod llama;
 pub mod utils;

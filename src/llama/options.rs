@@ -1,3 +1,5 @@
+use super::Callback;
+
 #[derive(Debug, Clone)]
 pub struct ModelOptions {
     pub context_size: i32,
@@ -60,7 +62,7 @@ pub struct PredictOptions {
     pub mirostat_tau: f32,
     pub penalize_nl: bool,
     pub logit_bias: String,
-    pub token_callback: Option<Box<dyn Fn(String) -> bool + Send + 'static>>,
+    pub token_callback: Option<Callback>,
     // pub token_callback: Option<fn(String) -> bool>,
     pub path_prompt_cache: String,
     pub m_lock: bool,
@@ -188,10 +190,7 @@ impl PredictOptions {
         self.m_map = m_map;
     }
 
-    pub fn set_token_callback(
-        &mut self,
-        token_callback: Option<Box<dyn Fn(String) -> bool + Send + 'static>>,
-    ) {
+    pub fn set_token_callback(&mut self, token_callback: Option<Callback>) {
         self.token_callback = token_callback;
     }
 
