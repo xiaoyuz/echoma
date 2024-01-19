@@ -5,7 +5,8 @@ use tokio::{
 
 use crate::{
     cmd::{CmdRes, Executor},
-    Result,
+    session::CURRENT_SESSION,
+    Result, USER_CHATTING_NAME_SHORT,
 };
 
 pub struct Client {}
@@ -33,10 +34,24 @@ impl Client {
                 });
 
                 println!("Echo:");
+
+                let mut output: Vec<String> = Default::default();
                 while let Some(cmd_res) = rx.recv().await {
                     match cmd_res {
-                        CmdRes::Content(content) => print!("{}", content),
-                        CmdRes::Over => break,
+                        CmdRes::Content(content) => {
+                            output.push(content.clone());
+                        }
+                        CmdRes::Over => {
+                            let output_str = output.join("").replace(USER_CHATTING_NAME_SHORT, "");
+                            let output_str = output_str.trim();
+                            CURRENT_SESSION
+                                .lock()
+                                .await
+                                .append(user_input.as_str(), output_str);
+                            output.clear();
+                            println!("{}", output_str);
+                            break;
+                        }
                         CmdRes::Exit => {
                             println!("Bye Bye!");
                             break 'outer;

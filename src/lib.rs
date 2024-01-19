@@ -8,6 +8,7 @@ pub mod client;
 pub mod cmd;
 pub mod config;
 pub mod llama;
+pub mod session;
 pub mod utils;
 
 lazy_static! {
@@ -35,3 +36,6 @@ pub type Error = Box<dyn std::error::Error + Send + Sync>;
 ///
 /// This is defined as a convenience.
 pub type Result<T> = anyhow::Result<T, Error>;
+
+pub const USER_CHATTING_NAME: &str = "Userc33dc3a";
+pub const USER_CHATTING_NAME_SHORT: &str = "Userc33dc3";

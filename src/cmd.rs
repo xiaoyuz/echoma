@@ -2,7 +2,8 @@ use tokio::sync::mpsc;
 
 use crate::{
     llama::{options::PredictOptions, LOCAL_LLAMA},
-    Result,
+    session::CURRENT_SESSION,
+    Result, USER_CHATTING_NAME, USER_CHATTING_NAME_SHORT,
 };
 
 pub enum CmdRes {
@@ -43,21 +44,28 @@ impl Executor {
     pub async fn apply(&self) -> Result<()> {
         match &self.cmd {
             Cmd::Greeting => {
+                CURRENT_SESSION.lock().await.clear();
                 self.result_sender
                     .send(CmdRes::Content("Hello, what can I do for you?".to_string()))
-                    .await
+                    .await?;
+                self.result_sender.send(CmdRes::Over).await
             }
             Cmd::Exit => self.result_sender.send(CmdRes::Exit).await,
             Cmd::Message(message) => {
-                let prompt = format!("Instruct: {}\nOutput:", message);
+                let prompt = CURRENT_SESSION.lock().await.gen_prompt(&message);
 
                 let sender = self.result_sender.clone();
                 let predict_options = PredictOptions {
                     token_callback: Some(Box::new(move |token| {
-                        let sender = sender.clone();
-                        tokio::spawn(async move { sender.send(CmdRes::Content(token)).await });
-                        true
+                        if !token.contains(USER_CHATTING_NAME_SHORT) {
+                            let sender = sender.clone();
+                            tokio::spawn(async move { sender.send(CmdRes::Content(token)).await });
+                            true
+                        } else {
+                            false
+                        }
                     })),
+                    stop_prompts: vec![USER_CHATTING_NAME.to_string()],
                     ..Default::default()
                 };
                 LOCAL_LLAMA.get().await.predict(prompt, predict_options)?;
